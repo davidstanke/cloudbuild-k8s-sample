@@ -19,11 +19,11 @@ steps:
   args: ['install']
   waitFor: ['-']
 
-# - id: 'web app unit tests'
-#   name: 'gcr.io/cloud-builders/npm'
-#   dir: 'web'
-#   args: ['test']
-#   waitFor: ['compile web app']
+- id: 'web app unit tests'
+  name: 'gcr.io/cloud-builders/npm'
+  dir: 'web'
+  args: ['test']
+  waitFor: ['compile web app']
 
 - id: 'build web'
   name: 'gcr.io/cloud-builders/docker'
@@ -68,7 +68,7 @@ steps:
   args: ['-c','find k8s -type f | xargs sed -i "s/PROJECT_ID/$PROJECT_ID/g"']
   waitFor: ['-']
 
-- id: 'deploy to staging'
+- id: 'deploy to prod'
   name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', 'k8s/', '--namespace=test-$BUILD_ID'] 
   waitFor: ['push web','push db','patch k8s config']
@@ -117,7 +117,7 @@ steps:
     ### -r = retries; -i = interval; -k = keyword to search for ###
     ./test/test-connection.sh -r 20 -i 3 -u http://$(cat _nodeip):$(cat _nodeport) && 
     ./test/test-content.sh -r 20 -i 3 -u http://$(cat _nodeip):$(cat _nodeport) -k 'Chocolate Chip' &&
-    echo "tests complete! preview application at http://$(cat _nodeip):$(cat _nodeport)"
+    echo "deploy complete! see it at http://$(cat _nodeip):$(cat _nodeport)"
 
   waitFor: ['get endpoint']
 
