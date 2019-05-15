@@ -62,7 +62,7 @@ steps:
   args: ['apply', '-f', 'k8s/'] 
   waitFor: ['push web','push db','patch k8s config']
 
-options:gc
+options:
   env:
     # location/name of GKE cluster (used by all kubectl commands)
     - CLOUDSDK_COMPUTE_ZONE=us-central1-c

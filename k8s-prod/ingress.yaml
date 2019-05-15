@@ -4,5 +4,5 @@ metadata:
   name: basic-ingress
 spec:
   backend:
-    serviceName: web
+    serviceName: cookieshop-web
     servicePort: 3000
