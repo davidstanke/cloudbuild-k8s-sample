@@ -124,5 +124,5 @@ steps:
 options:
   env:
     # location/name of GKE cluster (used by all kubectl commands)
-    - CLOUDSDK_COMPUTE_ZONE=us-central1-a
+    - CLOUDSDK_COMPUTE_ZONE=us-central1-c
     - CLOUDSDK_CONTAINER_CLUSTER=staging
