@@ -19,12 +19,6 @@ steps:
   args: ['install']
   waitFor: ['-']
 
-- id: 'web app unit tests'
-  name: 'gcr.io/cloud-builders/npm'
-  dir: 'web'
-  args: ['test']
-  waitFor: ['compile web app']
-
 - id: 'build web'
   name: 'gcr.io/cloud-builders/docker'
   args: [
@@ -33,7 +27,7 @@ steps:
     '--tag=gcr.io/$PROJECT_ID/web',
     'web/.',
   ]
-  # waitFor: ['web app unit tests']
+  waitFor: ['-'] # start immediately
 
 - id: 'build db'
   name: 'gcr.io/cloud-builders/docker'
@@ -45,11 +39,6 @@ steps:
   ]
   env:
   - "MYSQL_ROOT_PASSWORD=password"
-  waitFor: ['-'] # start immediately
-
-- id: 'make namespace'
-  name: 'gcr.io/cloud-builders/kubectl'
-  args: ['create','namespace','test-$BUILD_ID']
   waitFor: ['-'] # start immediately
 
 - id: 'push web'
@@ -68,58 +57,10 @@ steps:
   args: ['-c','find k8s -type f | xargs sed -i "s/PROJECT_ID/$PROJECT_ID/g"']
   waitFor: ['-']
 
-- id: 'deploy to staging'
+- id: 'deploy to prod'
   name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/', '--namespace=test-$BUILD_ID'] 
+  args: ['apply', '-f', 'k8s/'] 
   waitFor: ['push web','push db','patch k8s config']
-
-- id: 'get endpoint'
-  name: 'gcr.io/cloud-builders/kubectl'
-  entrypoint: 'bash'
-  args: 
-  - '-c'
-  - |
-    # determine which node port the service was exposed on
-    get_nodeport() {
-      kubectl get service cookieshop-web --namespace=test-$BUILD_ID -o=jsonpath='{.spec.ports[0].nodePort}' 
-    }
-
-    until [[ -n "$(get_nodeport)" ]]; do
-        echo "querying for nodeport"
-        sleep 3
-    done
-
-    echo "$(get_nodeport)" > _nodeport # save port for use in next step
-
-    # grab the public IP of a random node
-    # (why do this instead of a load balancer? b/c it's faster to instantiate)
-    # (and doesn't require additional billable resources)
-    # (we can reasonably expect the node to be durable enough to last until the test completes)
-    get_nodeip() {
-      kubectl get nodes --output jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}'
-    }
-
-    until [[ -n "$(get_nodeip)" ]]; do
-        echo "querying for nodeip"
-        sleep 3
-    done
-
-    echo $(get_nodeip) > _nodeip # save ip for use in next step
-
-  waitFor: ['deploy to staging']
-
-- id: 'integration tests'
-  name: 'gcr.io/cloud-builders/curl'
-  entrypoint: '/bin/bash'
-  args: 
-  - '-c'
-  - |
-    ### -r = retries; -i = interval; -k = keyword to search for ###
-    ./test/test-connection.sh -r 20 -i 3 -u http://$(cat _nodeip):$(cat _nodeport) && 
-    ./test/test-content.sh -r 20 -i 3 -u http://$(cat _nodeip):$(cat _nodeport) -k 'Chocolate Chip' &&
-    echo "tests complete! preview application at http://$(cat _nodeip):$(cat _nodeport)"
-
-  waitFor: ['get endpoint']
 
 options:
   env:
