@@ -19,11 +19,11 @@ steps:
   args: ['install']
   waitFor: ['-']
 
-- id: 'web app unit tests'
-  name: 'gcr.io/cloud-builders/npm'
-  dir: 'web'
-  args: ['test']
-  waitFor: ['compile web app']
+# - id: 'web app unit tests'
+#   name: 'gcr.io/cloud-builders/npm'
+#   dir: 'web'
+#   args: ['test']
+#   waitFor: ['compile web app']
 
 - id: 'build web'
   name: 'gcr.io/cloud-builders/docker'
@@ -33,7 +33,7 @@ steps:
     '--tag=gcr.io/$PROJECT_ID/web',
     'web/.',
   ]
-  waitFor: ['web app unit tests']
+  # waitFor: ['web app unit tests']
 
 - id: 'build db'
   name: 'gcr.io/cloud-builders/docker'
