@@ -115,14 +115,11 @@ steps:
   - '-c'
   - |
     ### -r = retries; -i = interval; -k = keyword to search for ###
-    ./test/test-connection.sh -r 20 -i 3 -u http://$(cat _nodeip):$(cat _nodeport)
-    ./test/test-content.sh -r 20 -i 3 -u http://$(cat _nodeip):$(cat _nodeport) -k 'Chocolate Chip'
-  waitFor: ['get endpoint']
+    ./test/test-connection.sh -r 20 -i 3 -u http://$(cat _nodeip):$(cat _nodeport) && 
+    ./test/test-content.sh -r 20 -i 3 -u http://$(cat _nodeip):$(cat _nodeport) -k 'Chocolate Chip' &&
+    echo "tests complete! preview application at http://$(cat _nodeip):$(cat _nodeport)"
 
-- id: 'delete namespace'
-  name: 'gcr.io/cloud-builders/kubectl'
-  args: ['delete', 'namespaces', 'test-$BUILD_ID']
-  waitFor: ['integration tests']
+  waitFor: ['get endpoint']
 
 options:
   env:

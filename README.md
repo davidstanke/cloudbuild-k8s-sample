@@ -1,4 +1,3 @@
-# Integration Testing on GCB
 This is a demo showing how to use [Google Cloud Build](https://cloud.google.com/cloud-build/) invocation to deploy to Kubernetes.
 
 ### Prerequisites
