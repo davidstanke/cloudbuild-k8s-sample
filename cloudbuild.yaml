@@ -121,11 +121,6 @@ steps:
 
   waitFor: ['get endpoint']
 
-- id: 'delete namespace'
-  name: 'gcr.io/cloud-builders/kubectl'
-  args: ['delete', 'namespaces', 'test-$BUILD_ID']
-  waitFor: ['integration tests']
-
 options:
   env:
     # location/name of GKE cluster (used by all kubectl commands)
