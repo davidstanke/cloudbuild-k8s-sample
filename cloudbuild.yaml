@@ -33,7 +33,7 @@ steps:
     '--tag=gcr.io/$PROJECT_ID/web',
     'web/.',
   ]
-  # waitFor: ['web app unit tests']
+  waitFor: ['web app unit tests']
 
 - id: 'build db'
   name: 'gcr.io/cloud-builders/docker'
@@ -120,6 +120,11 @@ steps:
     echo "deploy complete! see it at http://$(cat _nodeip):$(cat _nodeport)"
 
   waitFor: ['get endpoint']
+
+- id: 'delete namespace'
+  name: 'gcr.io/cloud-builders/kubectl'
+  args: ['delete', 'namespaces', 'test-$BUILD_ID']
+  waitFor: ['integration tests']
 
 options:
   env:
